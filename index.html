@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>A Special Letter For Leander 🩵 | From Biru</title>
+  <title>A Special Letter For Leander | From Biru</title>
 
-  <!-- Tailwind CSS & Lucide Icons -->
+  <!-- Tailwind CSS & Canvas Confetti -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   
-  <!-- Fonts -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
@@ -53,9 +53,6 @@
               '0%, 100%': { transform: 'translateY(0)' },
               '50%': { transform: 'translateY(-6px)' },
             },
-            shimmer: {
-              '100%': { transform: 'translateX(100%)' },
-            },
             pulseGlow: {
               '0%, 100%': { boxShadow: '0 0 15px rgba(56, 189, 248, 0.4)' },
               '50%': { boxShadow: '0 0 35px rgba(125, 211, 252, 0.8)' },
@@ -67,15 +64,8 @@
   </script>
 
   <style>
-    /* Envelope Flip Styles */
     .perspective-1000 {
       perspective: 1000px;
-    }
-    .preserve-3d {
-      transform-style: preserve-3d;
-    }
-    .backface-hidden {
-      backface-visibility: hidden;
     }
     
     .envelope-flap {
@@ -86,51 +76,76 @@
       transform: rotateX(180deg);
     }
 
-    /* Washi Tape Texture */
     .washi-tape {
-      background: rgba(255, 255, 255, 0.65);
+      background: rgba(255, 255, 255, 0.75);
       backdrop-filter: blur(2px);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      border-left: 2px dashed rgba(186, 230, 253, 0.8);
-      border-right: 2px dashed rgba(186, 230, 253, 0.8);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      border-left: 2px dashed rgba(186, 230, 253, 0.9);
+      border-right: 2px dashed rgba(186, 230, 253, 0.9);
     }
 
-    /* Soundwave visualizer bars */
     .wave-bar {
       transition: height 0.15s ease;
     }
 
-    /* Floating Love Burst */
-    .heart-burst {
+    .sparkle-particle {
       position: fixed;
       pointer-events: none;
-      animation: burstUp 1.8s ease-out forwards;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.8);
+      box-shadow: 0 0 8px rgba(125, 211, 252, 0.9);
+      animation: floatSparkle 1.8s ease-out forwards;
       z-index: 9999;
     }
 
-    @keyframes burstUp {
+    @keyframes floatSparkle {
       0% {
         opacity: 1;
-        transform: translate(0, 0) scale(0.5) rotate(0deg);
+        transform: translate(0, 0) scale(1);
       }
       100% {
         opacity: 0;
-        transform: translate(var(--tw-translate-x), -160px) scale(1.4) rotate(var(--tw-rotate));
+        transform: translate(var(--tw-translate-x), -140px) scale(0.2);
       }
     }
 
-    /* Custom Glassmorphism */
     .glass-card {
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.90);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.95);
     }
 
     .glass-card-subtle {
-      background: rgba(240, 249, 255, 0.7);
+      background: rgba(240, 249, 255, 0.80);
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(186, 230, 253, 0.5);
+      border: 1px solid rgba(186, 230, 253, 0.7);
+    }
+
+    .pin-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #38bdf8;
+      transition: all 0.2s ease;
+    }
+    .pin-dot.filled {
+      background-color: #0284c7;
+      transform: scale(1.15);
+      border-color: #0284c7;
+    }
+
+    /* Custom Scrollbar for Lyrics */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(224, 242, 254, 0.5);
+      border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #7dd3fc;
+      border-radius: 10px;
     }
   </style>
 </head>
@@ -138,252 +153,351 @@
 
   <canvas id="particle-canvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
 
-  <!-- Main Container -->
-  <div class="relative z-10 min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 md:p-10">
-
-    <!-- ENVELOPE MODAL OVERLAY (Shown first) -->
-    <div id="envelope-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sky-950/40 backdrop-blur-md transition-opacity duration-700">
+  <!-- STEP 1: PIN LOCK SCREEN -->
+  <div id="pin-screen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md transition-opacity duration-500">
+    <div class="glass-card max-w-sm w-full rounded-3xl p-6 sm:p-8 text-center shadow-2xl border border-white/90 relative">
       
-      <div class="relative w-full max-w-md perspective-1000">
+      <div class="w-14 h-14 bg-sky-100 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-sky-200 shadow-inner text-sky-600">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+        </svg>
+      </div>
+
+      <h2 class="text-xl font-bold text-slate-800 mb-1">Passcode Required</h2>
+      <p class="text-xs text-slate-500 font-medium mb-6">Masukkan PIN rahasia untuk membaca surat</p>
+
+      <!-- Pin Indicator Dots -->
+      <div id="pin-dots" class="flex justify-center items-center gap-3 mb-6">
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+        <div class="pin-dot"></div>
+      </div>
+
+      <!-- Keypad -->
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <button onclick="pressPin('1')" class="h-12 rounded-xl bg-sky-50/80 hover:bg-sky-100 text-sky-900 font-bold text-lg active:scale-95 transition-all">1</button>
+        <button onclick="pressPin('2')" class="h-12 rounded-xl bg-sky-50/80 hover:bg-sky-100 text-sky-900 font-bold text-lg active:scale-95 transition-all">2</button>
+        <button onclick="pressPin('3')" class="h-12 rounded-xl bg-sky-50/80 hover:bg-sky-100 text-sky-900 font-bold text-lg active:scale-95 transition-all">3</button>
+        <button onclick="pressPin('4')" class="h-12 rounded-xl bg-sky-50/80 hover:bg-sky-100 text-sky-900 font-bold text-lg active:scale-95 transition-all">4</button>
+        <button onclick="pressPin('5')" class="h-12 rounded-xl bg-sky-50/80 hover:bg-sky-100 text-sky-900 font-bold text-lg active:scale-95 transition-all">5</button>
+        <button onclick="pressPin('6')" class="h-12 rounded-xl bg-sky-50/80 hover:bg-sky-100 text-sky-900 font-bold text-lg active:scale-95 transition-all">6</button>
+        <button onclick="pressPin('7')" class="h-12 rounded-xl bg-sky-50/80 hover:bg-sky-100 text-sky-900 font-bold text-lg active:scale-95 transition-all">7</button>
+        <button onclick="pressPin('8')" class="h-12 rounded-xl bg-sky-50/80 hover:bg-sky-100 text-sky-900 font-bold text-lg active:scale-95 transition-all">8</button>
+        <button onclick="pressPin('9')" class="h-12 rounded-xl bg-sky-50/80 hover:bg-sky-100 text-sky-900 font-bold text-lg active:scale-95 transition-all">9</button>
+        <button onclick="clearPin()" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold text-xs active:scale-95 transition-all uppercase tracking-wider">Reset</button>
+        <button onclick="pressPin('0')" class="h-12 rounded-xl bg-sky-50/80 hover:bg-sky-100 text-sky-900 font-bold text-lg active:scale-95 transition-all">0</button>
+        <button onclick="deletePin()" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold text-xs active:scale-95 transition-all uppercase tracking-wider">Del</button>
+      </div>
+
+      <p id="pin-error" class="text-xs text-rose-500 font-bold h-4 mb-1 opacity-0 transition-opacity">PIN Salah, coba lagi!</p>
+      
+      <div class="mt-2 pt-3 border-t border-sky-100 flex items-center justify-center gap-1.5 text-[11px] text-sky-600 font-semibold bg-sky-50/60 rounded-xl py-1.5">
+        <span>Hint:</span>
+        <span>PIN Default adalah <strong class="underline">1234</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: ENVELOPE MODAL -->
+  <div id="envelope-screen" class="fixed inset-0 z-40 hidden flex items-center justify-center p-4 bg-sky-950/30 backdrop-blur-sm transition-opacity duration-700">
+    <div class="relative w-full max-w-md perspective-1000">
+      
+      <div class="text-center mb-6 animate-bounce-soft">
+        <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/95 shadow-lg text-sky-700 font-semibold text-xs tracking-wider uppercase border border-sky-200">
+          <span>Special Delivery For Leander</span>
+        </span>
+      </div>
+
+      <!-- Envelope Box -->
+      <div id="envelope-box" onclick="openEnvelope()" class="relative w-full h-64 sm:h-72 bg-sky-200 rounded-2xl shadow-2xl cursor-pointer group transition-transform duration-300 hover:scale-105 border-2 border-white/80 overflow-hidden">
         
-        <!-- Helper Hint Badge -->
-        <div class="text-center mb-6 animate-bounce-soft">
-          <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 shadow-lg text-sky-700 font-semibold text-xs tracking-wider uppercase border border-sky-200">
-            <span>✨</span> Sent Touch For Leander <span>✨</span>
-          </span>
+        <div class="absolute inset-0 bg-gradient-to-br from-sky-300 to-blue-200 flex items-center justify-center">
+          <div class="w-16 h-16 rounded-full border-2 border-sky-400/40 flex items-center justify-center">
+            <svg class="w-8 h-8 text-sky-400/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+          </div>
         </div>
 
-        <!-- The Interactive Envelope -->
-        <div id="envelope-box" onclick="openEnvelope()" class="relative w-full h-64 sm:h-72 bg-sky-200 rounded-2xl shadow-2xl cursor-pointer group transition-transform duration-300 hover:scale-105 border-2 border-white/80 overflow-hidden">
-          
-          <!-- Back Interior Pattern -->
-          <div class="absolute inset-0 bg-gradient-to-br from-sky-300 to-blue-200 flex items-center justify-center">
-            <span class="text-sky-400/40 text-6xl">🩵</span>
-          </div>
+        <!-- Preview Letter inside -->
+        <div id="envelope-letter" class="absolute bottom-3 left-4 right-4 h-52 bg-white rounded-t-xl p-4 shadow-md transition-transform duration-700 ease-out translate-y-12 flex flex-col items-center justify-center text-center">
+          <span class="text-xs uppercase tracking-widest text-sky-400 font-bold mb-1">A Letter For You</span>
+          <h3 class="font-serif italic font-bold text-slate-800 text-lg">For Leander</h3>
+          <p class="font-handwriting text-2xl text-sky-600 mt-2">"You're the prettiest thing..."</p>
+        </div>
 
-          <!-- Letter preview sliding up -->
-          <div id="envelope-letter" class="absolute bottom-3 left-4 right-4 h-52 bg-white rounded-t-xl p-4 shadow-md transition-transform duration-700 ease-out translate-y-12 flex flex-col items-center justify-center text-center">
-            <span class="text-xs uppercase tracking-widest text-sky-400 font-bold mb-1">A Letter For You</span>
-            <h3 class="font-serif italic font-bold text-slate-800 text-lg">For Leander</h3>
-            <p class="font-handwriting text-2xl text-sky-600 mt-2">"You're the prettiest thing..."</p>
-          </div>
+        <div class="envelope-flap absolute top-0 left-0 right-0 h-36 bg-gradient-to-b from-sky-300 to-sky-200 z-20 origin-top shadow-md flex items-center justify-center rounded-t-2xl" style="clip-path: polygon(0 0, 100% 0, 50% 100%);">
+        </div>
 
-          <!-- Flap Cover -->
-          <div class="envelope-flap absolute top-0 left-0 right-0 h-36 bg-gradient-to-b from-sky-300 to-sky-200 z-20 origin-top shadow-md flex items-center justify-center rounded-t-2xl" style="clip-path: polygon(0 0, 100% 0, 50% 100%);">
-          </div>
+        <div class="absolute inset-0 z-20 pointer-events-none" style="clip-path: polygon(0 0, 0 100%, 50% 50%); background: #bae6fd;"></div>
+        <div class="absolute inset-0 z-20 pointer-events-none" style="clip-path: polygon(100% 0, 100% 100%, 50% 50%); background: #93c5fd;"></div>
+        <div class="absolute inset-0 z-30 pointer-events-none" style="clip-path: polygon(0 100%, 100% 100%, 50% 45%); background: #7dd3fc;"></div>
 
-          <!-- Front Pocket Triangle Left/Right -->
-          <div class="absolute inset-0 z-20 pointer-events-none" style="clip-path: polygon(0 0, 0 100%, 50% 50%); background: #bae6fd;"></div>
-          <div class="absolute inset-0 z-20 pointer-events-none" style="clip-path: polygon(100% 0, 100% 100%, 50% 50%); background: #93c5fd;"></div>
-          <div class="absolute inset-0 z-30 pointer-events-none" style="clip-path: polygon(0 100%, 100% 100%, 50% 45%); background: #7dd3fc;"></div>
+        <!-- Wax Seal -->
+        <div id="wax-seal" class="absolute z-40 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-sky-500 border-2 border-white shadow-lg flex items-center justify-center transition-transform group-hover:scale-110">
+          <span class="font-handwriting text-white text-3xl font-bold">B</span>
+        </div>
 
-          <!-- Wax Seal Badge -->
-          <div id="wax-seal" class="absolute z-40 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-sky-500 border-2 border-white shadow-lg flex items-center justify-center transition-transform group-hover:scale-110">
-            <span class="font-handwriting text-white text-3xl font-bold">B</span>
-          </div>
-
-          <!-- Instruction Text Bottom -->
-          <div class="absolute bottom-2 inset-x-0 z-40 text-center pointer-events-none">
-            <span class="text-[11px] font-bold text-sky-800/80 bg-white/60 px-3 py-0.5 rounded-full uppercase tracking-wider backdrop-blur-sm">Klik untuk membuka 💌</span>
-          </div>
-
+        <div class="absolute bottom-2 inset-x-0 z-40 text-center pointer-events-none">
+          <span class="text-[11px] font-bold text-sky-800/80 bg-white/70 px-3 py-0.5 rounded-full uppercase tracking-wider backdrop-blur-sm">Klik untuk membuka</span>
         </div>
       </div>
     </div>
-
-    <!-- MAIN LETTER CONTAINER (Revealed after opening) -->
-    <main id="main-content" class="w-full max-w-2xl hidden opacity-0 transition-all duration-1000 transform translate-y-8 my-auto">
-      
-      <!-- Premium Glass Card -->
-      <div class="glass-card rounded-[32px] p-5 sm:p-8 md:p-10 shadow-2xl shadow-sky-200/50 relative border border-white/90">
-        
-        <!-- Decorative Stickers & Stamps top corners -->
-        <div class="absolute -top-4 -right-2 sm:-top-6 sm:-right-4 rotate-12 z-20 pointer-events-none">
-          <div class="bg-white/90 border-2 border-dashed border-sky-300 p-2 rounded-xl shadow-lg flex flex-col items-center gap-0.5">
-            <span class="text-xs font-mono font-bold text-sky-500 uppercase tracking-widest">AIR MAIL</span>
-            <span class="text-2xl">🩵</span>
-            <span class="text-[9px] font-bold text-slate-400">LEANDER • BIRU</span>
-          </div>
-        </div>
-
-        <div class="absolute -top-3 -left-2 sm:-top-5 sm:-left-3 -rotate-12 z-20 pointer-events-none">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-sky-400 to-blue-500 text-white font-bold text-xs shadow-md">
-            <span>✨</span> For My Favorite Person
-          </span>
-        </div>
-
-        <!-- Header Badge -->
-        <div class="flex justify-center mt-2 mb-8">
-          <span class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-sky-100/90 border border-sky-200 text-sky-800 text-xs font-bold tracking-widest uppercase shadow-sm">
-            <span class="w-2 h-2 rounded-full bg-sky-500 animate-ping"></span>
-            <span>Pernyataan</span>
-            <span>•</span>
-            <span class="text-sky-600">Special Letter</span>
-          </span>
-        </div>
-
-        <!-- Interactive Polaroid Photo Frame -->
-        <div class="flex justify-center mb-10">
-          <div 
-            id="polaroid-card" 
-            class="relative bg-white p-4 sm:p-5 rounded-2xl polaroid-shadow transform -rotate-1 hover:rotate-0 transition-all duration-500 ease-out max-w-[280px] sm:max-w-[320px] w-full border border-sky-100 group cursor-pointer"
-            onmousemove="handlePolaroidTilt(event, this)"
-            onmouseleave="resetPolaroidTilt(this)"
-          >
-            <!-- Washi Tape top center -->
-            <div class="washi-tape absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-6 z-30 transform -rotate-1"></div>
-
-            <div class="relative overflow-hidden rounded-xl aspect-[4/5] bg-sky-50">
-              <img 
-                id="user-photo"
-                src="foto1.jpg" 
-                alt="For Leander" 
-                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1518895949257-7621c3c786d7?q=80&w=800&auto=format&fit=crop';"
-              />
-              
-              <!-- Subtle shine overlay -->
-              <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/30 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-
-              <!-- Cute Sticker Badge bottom right of photo -->
-              <div class="absolute bottom-2 right-2 bg-white/80 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-bold text-sky-600 shadow-sm border border-white">
-                Cute Soul 🩵
-              </div>
-            </div>
-
-            <div class="mt-4 text-center">
-              <span class="font-handwriting text-3xl sm:text-4xl text-sky-600 font-bold tracking-wide">Leander ✨</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Music Player Widget -->
-        <div class="glass-card-subtle rounded-2xl p-4 sm:p-5 mb-8 border border-sky-200/80 shadow-sm relative overflow-hidden">
-          
-          <div class="flex items-center justify-between gap-4 relative z-10">
-            
-            <div class="flex items-center gap-3.5 sm:gap-4">
-              <!-- Vinyl Record -->
-              <div class="relative w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
-                <div id="vinyl-disc" class="w-full h-full rounded-full bg-slate-900 p-1 flex items-center justify-center border-2 border-sky-300 shadow-md">
-                  <div class="w-full h-full rounded-full border border-slate-700 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-                    <div class="w-4 h-4 rounded-full bg-sky-400 border-2 border-white flex items-center justify-center">
-                      <div class="w-1.5 h-1.5 rounded-full bg-slate-900"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Song Details & Sound Wave -->
-              <div class="flex flex-col">
-                <div class="flex items-center gap-2">
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-sky-600 bg-sky-100/80 px-2 py-0.5 rounded-md">Music</span>
-                  <!-- Soundwave visualizer bars -->
-                  <div id="soundwave" class="flex items-end gap-0.5 h-3 opacity-40">
-                    <div class="wave-bar w-0.5 bg-sky-500 rounded-full h-2"></div>
-                    <div class="wave-bar w-0.5 bg-sky-500 rounded-full h-3"></div>
-                    <div class="wave-bar w-0.5 bg-sky-500 rounded-full h-1"></div>
-                    <div class="wave-bar w-0.5 bg-sky-500 rounded-full h-2.5"></div>
-                  </div>
-                </div>
-                
-                <span class="font-bold text-slate-800 text-sm sm:text-base leading-tight mt-0.5">Stuck</span>
-                <span class="text-xs text-slate-500 font-medium">LANY</span>
-              </div>
-            </div>
-
-            <!-- Play Button -->
-            <button 
-              id="play-button"
-              onclick="toggleAudio()"
-              class="flex items-center justify-center w-12 h-12 rounded-full bg-sky-500 hover:bg-sky-600 active:scale-95 text-white shadow-lg shadow-sky-400/40 transition-all duration-200"
-              aria-label="Play Song"
-            >
-              <svg id="play-icon" class="w-6 h-6 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z"/>
-              </svg>
-              <svg id="pause-icon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Progress Bar -->
-          <div class="mt-3.5 pt-2 border-t border-sky-100 flex items-center gap-2 text-[11px] text-slate-400 font-mono">
-            <span id="time-current">0:00</span>
-            <div class="flex-1 h-1.5 bg-sky-100 rounded-full overflow-hidden cursor-pointer" onclick="seekAudio(event, this)">
-              <div id="audio-progress" class="h-full bg-sky-400 rounded-full w-0 transition-all duration-100"></div>
-            </div>
-            <span id="time-duration">0:00</span>
-          </div>
-
-          <!-- Audio Element -->
-          <audio id="audio-player" loop preload="auto">
-            <source src="stuck.mp3" type="audio/mpeg">
-            <!-- Fallback Stream if local mp3 not loaded yet -->
-            <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3" type="audio/mpeg">
-          </audio>
-        </div>
-
-        <!-- Letter Body Content -->
-        <div class="bg-white/95 border border-sky-100/80 rounded-2xl p-6 sm:p-8 shadow-sm text-slate-700 leading-relaxed text-sm sm:text-base space-y-5">
-          
-          <p class="first-letter:text-4xl first-letter:font-serif first-letter:font-bold first-letter:text-sky-500 first-letter:mr-1">
-            kamu tuh <span class="font-bold text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">prettiest thing i've ever seen, genuinely.</span> bukan cuma soal penampilan kamu, tapi juga cara kamu cerita, cara kamu melihat sesuatu, <span class="italic text-slate-600">and all those little things that make you who you are.</span> aku harap kamu tahu kalau kamu udah cukup, tanpa harus jadi sempurna atau mengubah diri kamu buat siapa pun. <span class="font-medium text-sky-700">you deserve to be appreciated for who you are, even on days when you can't see the good in yourself.</span>
-          </p>
-
-          <p>
-            and honestly, aku seneng bisa kenal kamu dan dengerin cerita-cerita kamu, even the most random ones. cuma kadang aku suka mikir, apa aku yang terlalu berharap atau memang dari awal aku salah memahami semuanya? i'm sorry kalau aku terlalu jauh memaknai hal-hal kecil dari kamu. aku juga sadar mungkin suatu saat nanti kamu bakal menemukan seseorang yang kamu cintai, dan deep down, aku tahu kemungkinan besar orang itu bukan aku. aku nggak bisa bohong kalau membayangkan itu bakal bikin aku sedih, karena meskipun aku berusaha buat nggak berharap terlalu jauh, ternyata aku masih punya harapan kecil tentang kita. but i know i can't force anything, and i don't blame you for whatever you feel. aku cuma ingin jujur kalau ternyata ada bagian dari aku yang berharap lebih, meskipun aku juga sedang belajar menerima kemungkinan kalau perasaan ini mungkin cuma jadi milik aku sendiri.
-          </p>
-
-          <div class="p-4 rounded-xl bg-gradient-to-r from-sky-50 via-blue-50 to-indigo-50 border-l-4 border-sky-400 font-serif italic text-sky-800 text-sm sm:text-base">
-            "you're a pretty little soul with so many good things inside you, and i hope life treats you as gently as you deserve. ♡"
-          </div>
-
-          <p>
-            and one more thing, <span class="font-bold text-sky-600">please don't forget how lovely you are, okay?</span> kamu punya banyak hal baik yang mungkin nggak selalu kamu sadari. i hope you never feel like you have to compete with anyone or become someone else just to be loved. kamu nggak perlu jadi yang paling sempurna, paling menarik, atau selalu punya sesuatu buat ditawarkan. the way you are is already worth appreciating. aku harap kamu selalu ketemu alasan buat menghargai diri sendiri, bahkan di hari-hari ketika kamu ngerasa kurang. because really, there's nothing wrong with being yourself. <span class="font-medium text-sky-700">you're a pretty little soul with so many good things inside you, and i hope life treats you as gently as you deserve. ♡</span>
-          </p>
-
-        </div>
-
-        <!-- Interactive Hug / Love Counter Section -->
-        <div class="mt-8 flex flex-col items-center justify-center gap-3">
-          <button 
-            onclick="sendLove(event)" 
-            class="group relative inline-flex items-center gap-2.5 px-6 py-3.5 rounded-full bg-gradient-to-r from-sky-400 via-sky-500 to-blue-500 hover:from-sky-500 hover:to-blue-600 active:scale-95 text-white font-bold text-sm shadow-xl shadow-sky-300/60 transition-all duration-300"
-          >
-            <span class="text-lg group-hover:scale-125 transition-transform duration-300">🩵</span>
-            <span>Send Hugs / Beri Cinta</span>
-            <span id="love-count" class="ml-1 bg-white/20 text-white text-xs px-2 py-0.5 rounded-full">0</span>
-          </button>
-          <span class="text-xs text-slate-400 font-medium">Klik tombol untuk kirim peluk & hati melayang ✨</span>
-        </div>
-
-        <!-- Footer Signatures -->
-        <div class="mt-10 pt-6 border-t border-sky-100/80 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div class="flex items-center gap-2">
-            <span class="text-xs uppercase font-bold tracking-widest text-slate-400">To:</span>
-            <span class="px-3.5 py-1.5 bg-sky-100/80 text-sky-800 text-sm font-bold rounded-xl border border-sky-200">Leander 🤍</span>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <span class="text-xs uppercase font-bold tracking-widest text-slate-400">From:</span>
-            <span class="font-handwriting text-3xl sm:text-4xl text-sky-600 font-bold">Biru 🩵</span>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="text-center mt-6 text-xs text-slate-400 font-medium">
-        Made with love for Leander • 2026
-      </div>
-
-    </main>
-
   </div>
 
+  <!-- STEP 3: MAIN APPLICATION CONTENT -->
+  <main id="main-content" class="w-full max-w-2xl hidden opacity-0 transition-all duration-1000 transform translate-y-8 my-auto relative z-10 p-4 sm:p-6 my-6 mx-auto">
+    
+    <div class="glass-card rounded-[32px] p-5 sm:p-8 md:p-10 shadow-2xl shadow-sky-200/50 relative border border-white/90">
+      
+      <!-- Stamp Tag -->
+      <div class="absolute -top-4 -right-2 sm:-top-6 sm:-right-4 rotate-12 z-20 pointer-events-none">
+        <div class="bg-white/95 border-2 border-dashed border-sky-300 p-2.5 rounded-xl shadow-lg flex flex-col items-center gap-0.5">
+          <span class="text-xs font-mono font-bold text-sky-500 uppercase tracking-widest">AIR MAIL</span>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">LEANDER • BIRU</span>
+        </div>
+      </div>
+
+      <div class="absolute -top-3 -left-2 sm:-top-5 sm:-left-3 -rotate-12 z-20 pointer-events-none">
+        <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-gradient-to-r from-sky-400 to-blue-500 text-white font-bold text-xs shadow-md uppercase tracking-wider">
+          Special Edition
+        </span>
+      </div>
+
+      <!-- Header Badge -->
+      <div class="flex justify-center mt-2 mb-8">
+        <span class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-sky-100/90 border border-sky-200 text-sky-800 text-xs font-bold tracking-widest uppercase shadow-sm">
+          <span>Pernyataan</span>
+          <span>•</span>
+          <span class="text-sky-600">Special Letter</span>
+        </span>
+      </div>
+
+      <!-- Polaroid Frame -->
+      <div class="flex justify-center mb-10">
+        <div 
+          id="polaroid-card" 
+          class="relative bg-white p-4 sm:p-5 rounded-2xl shadow-xl transform -rotate-1 hover:rotate-0 transition-all duration-500 ease-out max-w-[280px] sm:max-w-[320px] w-full border border-sky-100 group cursor-pointer"
+          onmousemove="handlePolaroidTilt(event, this)"
+          onmouseleave="resetPolaroidTilt(this)"
+        >
+          <div class="washi-tape absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-6 z-30 transform -rotate-1"></div>
+
+          <div class="relative overflow-hidden rounded-xl aspect-[4/5] bg-sky-50">
+            <img 
+              id="user-photo"
+              src="foto1.jpg" 
+              alt="For Leander" 
+              class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1518895949257-7621c3c786d7?q=80&w=800&auto=format&fit=crop';"
+            />
+            
+            <div class="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/30 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+
+            <div class="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-sky-700 shadow-sm border border-sky-100 uppercase tracking-wider">
+              Twins Owl
+            </div>
+          </div>
+
+          <div class="mt-4 text-center">
+            <span class="font-handwriting text-3xl sm:text-4xl text-sky-600 font-bold tracking-wide">Leander</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card-subtle rounded-2xl p-4 sm:p-5 mb-8 border border-sky-200/80 shadow-sm relative overflow-hidden">
+        <div class="flex items-center justify-between gap-4 relative z-10">
+          <div class="flex items-center gap-3.5 sm:gap-4">
+            <div class="relative w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
+              <div id="vinyl-disc" class="w-full h-full rounded-full bg-slate-900 p-1 flex items-center justify-center border-2 border-sky-300 shadow-md">
+                <div class="w-full h-full rounded-full border border-slate-700 flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+                  <div class="w-4 h-4 rounded-full bg-sky-400 border-2 border-white flex items-center justify-center">
+                    <div class="w-1.5 h-1.5 rounded-full bg-slate-900"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-sky-600 bg-sky-100/80 px-2 py-0.5 rounded-md">Music</span>
+                <div id="soundwave" class="flex items-end gap-0.5 h-3 opacity-40">
+                  <div class="wave-bar w-0.5 bg-sky-500 rounded-full h-2"></div>
+                  <div class="wave-bar w-0.5 bg-sky-500 rounded-full h-3"></div>
+                  <div class="wave-bar w-0.5 bg-sky-500 rounded-full h-1"></div>
+                  <div class="wave-bar w-0.5 bg-sky-500 rounded-full h-2.5"></div>
+                </div>
+              </div>
+              
+              <span class="font-bold text-slate-800 text-sm sm:text-base leading-tight mt-0.5">Stuck</span>
+              <span class="text-xs text-slate-500 font-medium">LANY</span>
+            </div>
+          </div>
+
+          <button 
+            id="play-button"
+            onclick="toggleAudio()"
+            class="flex items-center justify-center w-12 h-12 rounded-full bg-sky-500 hover:bg-sky-600 active:scale-95 text-white shadow-lg shadow-sky-400/40 transition-all duration-200"
+            aria-label="Play Song"
+          >
+            <svg id="play-icon" class="w-6 h-6 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            <svg id="pause-icon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Audio Progress -->
+        <div class="mt-3.5 pt-2 border-t border-sky-100 flex items-center gap-2 text-[11px] text-slate-400 font-mono">
+          <span id="time-current">0:00</span>
+          <div class="flex-1 h-1.5 bg-sky-100 rounded-full overflow-hidden cursor-pointer" onclick="seekAudio(event, this)">
+            <div id="audio-progress" class="h-full bg-sky-400 rounded-full w-0 transition-all duration-100"></div>
+          </div>
+          <span id="time-duration">0:00</span>
+        </div>
+
+        <audio id="audio-player" loop preload="auto">
+          <source src="stuck.mp3" type="audio/mpeg">
+          <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3" type="audio/mpeg">
+        </audio>
+      </div>
+
+      <div class="bg-white/95 border border-sky-100/80 rounded-2xl p-6 sm:p-8 shadow-sm text-slate-700 leading-relaxed text-sm sm:text-base space-y-5">
+        
+        <p class="first-letter:text-4xl first-letter:font-serif first-letter:font-bold first-letter:text-sky-500 first-letter:mr-1">
+          kamu tuh <span class="font-bold text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded">prettiest thing i've ever seen, genuinely.</span> bukan cuma soal penampilan kamu, tapi juga cara kamu cerita, cara kamu melihat sesuatu, <span class="italic text-slate-600">and all those little things that make you who you are.</span> aku harap kamu tahu kalau kamu udah cukup, tanpa harus jadi sempurna atau mengubah diri kamu buat siapa pun. <span class="font-medium text-sky-700">you deserve to be appreciated for who you are, even on days when you can't see the good in yourself.</span>
+        </p>
+
+        <p>
+          and honestly, aku seneng bisa kenal kamu dan dengerin cerita-cerita kamu, even the most random ones. cuma kadang aku suka mikir, apa aku yang terlalu berharap atau memang dari awal aku salah memahami semuanya? i'm sorry kalau aku terlalu jauh memaknai hal-hal kecil dari kamu. aku juga sadar mungkin suatu saat nanti kamu bakal menemukan seseorang yang kamu cintai, dan deep down, aku tahu kemungkinan besar orang itu bukan aku. aku nggak bisa bohong kalau membayangkan itu bakal bikin aku sedih, karena meskipun aku berusaha buat nggak berharap terlalu jauh, ternyata aku masih punya harapan kecil tentang kita. but i know i can't force anything, and i don't blame you for whatever you feel. aku cuma ingin jujur kalau ternyata ada bagian dari aku yang berharap lebih, meskipun aku juga sedang belajar menerima kemungkinan kalau perasaan ini mungkin cuma jadi milik aku sendiri.
+        </p>
+
+        <div class="p-4 rounded-xl bg-gradient-to-r from-sky-50 via-blue-50 to-indigo-50 border-l-4 border-sky-400 font-serif italic text-sky-800 text-sm sm:text-base">
+          "you're a twins owl with so many good things inside you, and i hope life treats you as gently as you deserve."
+        </div>
+
+        <p>
+          and one more thing, <span class="font-bold text-sky-600">please don't forget how lovely you are, okay?</span> kamu punya banyak hal baik yang mungkin nggak selalu kamu sadari. i hope you never feel like you have to compete with anyone or become someone else just to be loved. kamu nggak perlu jadi yang paling sempurna, paling menarik, atau selalu punya sesuatu buat ditawarkan. the way you are is already worth appreciating. aku harap kamu selalu ketemu alasan buat menghargai diri sendiri, bahkan di hari-hari ketika kamu ngerasa kurang. because really, there's nothing wrong with being yourself. <span class="font-medium text-sky-700">you're a twins owl with so many good things inside you, and i hope life treats you as gently as you deserve.</span>
+        </p>
+
+      </div>
+
+      <div class="mt-8 pt-6 border-t border-sky-100">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-slate-800 text-xs sm:text-sm uppercase tracking-wider">Lyrics — Stuck by LANY</h3>
+          <span class="text-[10px] bg-sky-100 text-sky-700 font-bold px-2 py-0.5 rounded uppercase">Track Info</span>
+        </div>
+
+        <div class="bg-sky-50/70 border border-sky-200/70 rounded-2xl p-5 text-xs sm:text-sm text-slate-600 font-medium space-y-3 max-h-56 overflow-y-auto custom-scrollbar">
+          <p class="italic text-sky-600 font-bold">"Time slows down when I think of you..."</p>
+          <p>I get stuck on you, I can't get over you</p>
+          <p>No matter what I do, I'm stuck on you</p>
+          <p class="text-sky-700 font-semibold bg-white/80 p-2.5 rounded-lg border border-sky-100 shadow-xs">
+            I think about you every single night<br>
+            I try to let you go, but you're still in my mind
+          </p>
+          <p>Tell me how to move on when everything reminds me of you</p>
+          <p>All these memories keep coming back like they always do...</p>
+          <p class="italic text-sky-500">I'm stuck on you</p>
+        </div>
+      </div>
+
+      <!-- Interactive Button -->
+      <div class="mt-8 flex flex-col items-center justify-center gap-3">
+        <button 
+          onclick="sendSparkles(event)" 
+          class="group relative inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-gradient-to-r from-sky-400 via-sky-500 to-blue-500 hover:from-sky-500 hover:to-blue-600 active:scale-95 text-white font-bold text-sm shadow-xl shadow-sky-300/60 transition-all duration-300"
+        >
+          <span>Kirim Apresiasi</span>
+          <span id="sparkle-count" class="ml-1 bg-white/20 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+        </button>
+        <span class="text-xs text-slate-400 font-medium">Klik untuk efek animasi interaktif</span>
+      </div>
+
+      <!-- Signatures -->
+      <div class="mt-10 pt-6 border-t border-sky-100/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <span class="text-xs uppercase font-bold tracking-widest text-slate-400">To:</span>
+          <span class="px-3.5 py-1.5 bg-sky-100/80 text-sky-800 text-sm font-bold rounded-xl border border-sky-200">Leander</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <span class="text-xs uppercase font-bold tracking-widest text-slate-400">From:</span>
+          <span class="font-handwriting text-3xl sm:text-4xl text-sky-600 font-bold">Biru</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="text-center mt-6 text-xs text-slate-400 font-medium">
+      Made with care for Leander
+    </div>
+
+  </main>
+
   <script>
-    // 1. PARTICLES CANVAS ENGINE
+    // 1. PIN LOCK SYSTEM
+    const CORRECT_PIN = "1234";
+    let enteredPin = "";
+
+    function updatePinDots() {
+      const dots = document.querySelectorAll('.pin-dot');
+      dots.forEach((dot, index) => {
+        if (index < enteredPin.length) {
+          dot.classList.add('filled');
+        } else {
+          dot.classList.remove('filled');
+        }
+      });
+    }
+
+    function pressPin(digit) {
+      if (enteredPin.length < 4) {
+        enteredPin += digit;
+        updatePinDots();
+        
+        if (enteredPin.length === 4) {
+          setTimeout(verifyPin, 200);
+        }
+      }
+    }
+
+    function deletePin() {
+      if (enteredPin.length > 0) {
+        enteredPin = enteredPin.slice(0, -1);
+        updatePinDots();
+      }
+    }
+
+    function clearPin() {
+      enteredPin = "";
+      updatePinDots();
+      document.getElementById('pin-error').classList.add('opacity-0');
+    }
+
+    function verifyPin() {
+      if (enteredPin === CORRECT_PIN) {
+        const pinScreen = document.getElementById('pin-screen');
+        const envelopeScreen = document.getElementById('envelope-screen');
+        
+        pinScreen.classList.add('opacity-0');
+        setTimeout(() => {
+          pinScreen.classList.add('hidden');
+          envelopeScreen.classList.remove('hidden');
+        }, 500);
+      } else {
+        const err = document.getElementById('pin-error');
+        err.classList.remove('opacity-0');
+        setTimeout(() => {
+          clearPin();
+        }, 800);
+      }
+    }
+
+    // 2. PARTICLES CANVAS ENGINE (Geometric ambient particles)
     const canvas = document.getElementById('particle-canvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
@@ -402,22 +516,18 @@
 
       reset() {
         this.x = Math.random() * canvas.width;
-        this.y = canvas.height + Math.random() * 100;
-        this.size = Math.random() * 14 + 8;
-        this.speedY = Math.random() * 0.8 + 0.3;
-        this.speedX = (Math.random() - 0.5) * 0.5;
-        this.opacity = Math.random() * 0.6 + 0.2;
-        this.symbol = ['🩵', '✨', '🤍', '☁️', '❄️'][Math.floor(Math.random() * 5)];
-        this.rotation = Math.random() * 360;
-        this.rotationSpeed = (Math.random() - 0.5) * 1;
+        this.y = canvas.height + Math.random() * 80;
+        this.radius = Math.random() * 3 + 1;
+        this.speedY = Math.random() * 0.7 + 0.2;
+        this.speedX = (Math.random() - 0.5) * 0.4;
+        this.opacity = Math.random() * 0.5 + 0.2;
       }
 
       update() {
         this.y -= this.speedY;
         this.x += this.speedX;
-        this.rotation += this.rotationSpeed;
 
-        if (this.y < -50) {
+        if (this.y < -20) {
           this.reset();
         }
       }
@@ -425,17 +535,17 @@
       draw() {
         ctx.save();
         ctx.globalAlpha = this.opacity;
-        ctx.font = `${this.size}px sans-serif`;
-        ctx.translate(this.x, this.y);
-        ctx.rotate((this.rotation * Math.PI) / 180);
-        ctx.fillText(this.symbol, 0, 0);
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
         ctx.restore();
       }
     }
 
     function initParticles() {
       particles = [];
-      const count = Math.min(Math.floor(window.innerWidth / 25), 35);
+      const count = Math.min(Math.floor(window.innerWidth / 20), 40);
       for (let i = 0; i < count; i++) {
         const p = new FloatingParticle();
         p.y = Math.random() * canvas.height;
@@ -455,7 +565,7 @@
     initParticles();
     animateParticles();
 
-    // 2. ENVELOPE OPENING LOGIC
+    // 3. ENVELOPE OPENING LOGIC
     let isEnvelopeOpened = false;
 
     function openEnvelope() {
@@ -469,31 +579,27 @@
 
       box.classList.add('envelope-open');
 
-      // Slide letter up slightly
       setTimeout(() => {
         letter.style.transform = 'translateY(-60px)';
       }, 300);
 
-      // Trigger Confetti
       setTimeout(() => {
         if (typeof confetti === 'function') {
           confetti({
-            particleCount: 80,
-            spread: 70,
+            particleCount: 70,
+            spread: 60,
             origin: { y: 0.6 },
             colors: ['#38bdf8', '#bae6fd', '#ffffff', '#60a5fa']
           });
         }
       }, 600);
 
-      // Fade out screen & show content
       setTimeout(() => {
         screen.classList.add('opacity-0', 'pointer-events-none');
         mainContent.classList.remove('hidden');
         
         setTimeout(() => {
           mainContent.classList.remove('opacity-0', 'translate-y-8');
-          // Auto play music on open if possible
           toggleAudio(true);
         }, 100);
 
@@ -503,9 +609,8 @@
       }, 1400);
     }
 
-    // 3. AUDIO PLAYER CONTROL
+    // 4. AUDIO PLAYER CONTROL
     const audio = document.getElementById('audio-player');
-    const playBtn = document.getElementById('play-button');
     const playIcon = document.getElementById('play-icon');
     const pauseIcon = document.getElementById('pause-icon');
     const vinyl = document.getElementById('vinyl-disc');
@@ -521,9 +626,7 @@
           pauseIcon.classList.remove('hidden');
           vinyl.classList.add('spin-slow');
           startWaveAnimation();
-        }).catch(err => {
-          console.log('Autoplay blocked:', err);
-        });
+        }).catch(err => console.log('Autoplay blocked:', err));
       } else {
         audio.pause();
         playIcon.classList.remove('hidden');
@@ -574,7 +677,7 @@
       bars.forEach(bar => bar.style.height = '4px');
     }
 
-    // 4. POLAROID 3D TILT EFFECT
+    // 5. POLAROID 3D TILT EFFECT
     function handlePolaroidTilt(e, card) {
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -593,36 +696,33 @@
       card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) rotate(-1deg) scale(1)`;
     }
 
-    // 5. SEND HUGS / LOVE BURST
-    let loveCount = 0;
+    // 6. SPARKLE BURST BUTTON (Geometric light dots instead of emojis)
+    let sparkleCount = 0;
 
-    function sendLove(e) {
-      loveCount++;
-      document.getElementById('love-count').innerText = loveCount;
+    function sendSparkles(e) {
+      sparkleCount++;
+      document.getElementById('sparkle-count').innerText = sparkleCount;
 
-      const hearts = ['🩵', '🤍', '✨', '💙', '💖'];
-      const rect = e.target.getBoundingClientRect();
+      const rect = e.currentTarget.getBoundingClientRect();
+      const startX = e.clientX || (rect.left + rect.width / 2);
+      const startY = e.clientY || (rect.top + rect.height / 2);
       
-      for (let i = 0; i < 6; i++) {
-        const heart = document.createElement('div');
-        heart.className = 'heart-burst';
-        heart.innerText = hearts[Math.floor(Math.random() * hearts.length)];
+      for (let i = 0; i < 8; i++) {
+        const item = document.createElement('div');
+        item.className = 'sparkle-particle';
         
-        const startX = e.clientX || (rect.left + rect.width / 2);
-        const startY = e.clientY || (rect.top + rect.height / 2);
-        
-        const translateX = (Math.random() - 0.5) * 160;
-        const rotate = (Math.random() - 0.5) * 60;
+        const size = Math.random() * 10 + 6;
+        const translateX = (Math.random() - 0.5) * 180;
 
-        heart.style.left = `${startX}px`;
-        heart.style.top = `${startY}px`;
-        heart.style.setProperty('--tw-translate-x', `${translateX}px`);
-        heart.style.setProperty('--tw-rotate', `${rotate}deg`);
-        heart.style.fontSize = `${Math.random() * 1.2 + 1.2}rem`;
+        item.style.width = `${size}px`;
+        item.style.height = `${size}px`;
+        item.style.left = `${startX}px`;
+        item.style.top = `${startY}px`;
+        item.style.setProperty('--tw-translate-x', `${translateX}px`);
 
-        document.body.appendChild(heart);
+        document.body.appendChild(item);
 
-        setTimeout(() => heart.remove(), 1800);
+        setTimeout(() => item.remove(), 1800);
       }
     }
   </script>
